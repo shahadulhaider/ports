@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -153,6 +155,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, keys.Refresh) {
 			cmds = append(cmds, fetchPortsCmd())
 		}
+		if key.Matches(msg, keys.Kill) {
+			selectedRow := m.table.SelectedRow()
+			if len(selectedRow) >= 2 {
+				pid, err := strconv.Atoi(selectedRow[1])
+				if err == nil && pid > 0 {
+					processName := ""
+					if len(selectedRow) >= 3 {
+						processName = selectedRow[2]
+					}
+					killErr := syscall.Kill(pid, syscall.SIGTERM)
+					if killErr == nil {
+						m.statusMsg = fmt.Sprintf("Killed PID %d (%s)", pid, processName)
+						cmds = append(cmds, fetchPortsCmd(), clearStatusCmd())
+					} else if errors.Is(killErr, syscall.EPERM) {
+						m.statusMsg = fmt.Sprintf("Permission denied: cannot kill PID %d (%s)", pid, processName)
+						cmds = append(cmds, clearStatusCmd())
+					} else if errors.Is(killErr, syscall.ESRCH) {
+						m.statusMsg = fmt.Sprintf("Process %d already terminated", pid)
+						cmds = append(cmds, fetchPortsCmd(), clearStatusCmd())
+					} else {
+						m.statusMsg = fmt.Sprintf("Kill failed: %v", killErr)
+						cmds = append(cmds, clearStatusCmd())
+					}
+				}
+			}
+		}
 		// Delegate navigation to table
 		m.table, cmd = m.table.Update(msg)
 		cmds = append(cmds, cmd)
@@ -209,6 +237,12 @@ func portsToRows(ports []PortInfo) []table.Row {
 		}
 	}
 	return rows
+}
+
+func clearStatusCmd() tea.Cmd {
+	return tea.Tick(3*time.Second, func(time.Time) tea.Msg {
+		return statusClearMsg{}
+	})
 }
 
 func filterPorts(ports []PortInfo, query string) []PortInfo {
