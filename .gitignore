@@ -1,0 +1,20 @@
+# Binary
+ports
+/cmd/ports/ports
+
+# Build output
+dist/
+
+# Sisyphus (planning/orchestration)
+.sisyphus/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
