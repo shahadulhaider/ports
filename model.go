@@ -34,6 +34,7 @@ type model struct {
 	width         int
 	height        int
 	ready         bool
+	showHelp      bool
 }
 
 func NewModel() model {
@@ -148,6 +149,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, keys.Quit) {
 			return m, tea.Quit
 		}
+		if key.Matches(msg, keys.Help) {
+			m.showHelp = !m.showHelp
+			return m, tea.Batch(cmds...)
+		}
 		if key.Matches(msg, keys.Filter) {
 			m.filtering = true
 			m.filterInput.SetValue("")
@@ -217,11 +222,32 @@ func (m model) View() string {
 
 	title := titleStyle.Render(fmt.Sprintf(" ⚡ ports (%d listening)", len(m.filteredPorts)))
 
-	var tableView string
-	if len(m.filteredPorts) == 0 && m.ready {
-		tableView = helpStyle.Render("\n  No matching ports")
+	var mainContent string
+	if m.showHelp {
+		helpContent := `
+  ↑/↓ or j/k   Navigate rows
+  /             Filter ports
+  Esc           Clear filter
+  x             Kill process (SIGTERM)
+  c             Copy to clipboard
+  r             Refresh now
+  ?             Toggle this help
+  q / Ctrl+C    Quit`
+
+		box := helpBoxStyle.Render("  Help — ports\n" + helpContent + "\n\n  Press ? to close")
+		w := m.width
+		if w == 0 {
+			w = 80
+		}
+		mainContent = lipgloss.Place(w, m.height-3, lipgloss.Center, lipgloss.Center, box)
+	} else if len(m.filteredPorts) == 0 && m.ready {
+		if m.filterText != "" {
+			mainContent = helpStyle.Render("\n  No matching ports")
+		} else {
+			mainContent = helpStyle.Render("\n  No listening TCP ports found")
+		}
 	} else {
-		tableView = m.table.View()
+		mainContent = m.table.View()
 	}
 
 	var statusText string
@@ -242,7 +268,7 @@ func (m model) View() string {
 	}
 	status := statusBarStyle.Width(w).Render(statusText)
 
-	return lipgloss.JoinVertical(lipgloss.Left, title, tableView, status)
+	return lipgloss.JoinVertical(lipgloss.Left, title, mainContent, status)
 }
 
 func portsToRows(ports []PortInfo) []table.Row {
