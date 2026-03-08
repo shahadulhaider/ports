@@ -1,0 +1,21 @@
+TASK 8: Update main.go with --port and --diff flag parsing
+
+VERIFICATION RESULTS:
+✓ go build -o ports ./... — SUCCESS (no errors)
+✓ go vet ./... — SUCCESS (no warnings)
+✓ ./ports --help — Shows both flags:
+  - -diff: show changes since last run and exit
+  - -port int: pre-filter to specific port number
+
+CHANGES MADE:
+1. main.go: Added flag parsing with flag.IntVar and flag.BoolVar
+2. main.go: Added diffFlag check to call runDiffMode(portFlag) and exit
+3. main.go: Pass portFlag to NewModel(portFlag) for TUI pre-filtering
+4. diff.go: Created stub with runDiffMode(portFilter int) int returning 0
+
+EXPECTED BEHAVIOR:
+- ./ports --port 3000 → starts TUI with port 3000 pre-filtered
+- ./ports --diff → calls runDiffMode and exits (returns 0 from stub)
+- ./ports → starts TUI normally with no port filter
+
+STATUS: READY FOR T9 (diff.go implementation)

@@ -1,0 +1,40 @@
+Task 9: Create diff.go with runDiffMode implementation
+=======================================================
+
+## Build Verification
+- `go build -o ports ./...` — PASS
+- `go vet ./...` — PASS
+- `GOOS=linux go build -o /dev/null ./...` — PASS
+
+## Functional Tests
+
+### First run (cache cleared)
+$ rm -rf ~/Library/Caches/ports; ./ports --diff
+First run — baseline saved with 14 ports
+Exit code: 0 ✓
+
+### New port detected
+$ nc -l 19876 &; ./ports --diff
+ports diff (compared to last run at 16:42:01):
++ 19876	43494	nc	*
+1 changes (1 new, 0 gone)
+Exit code: 1 ✓
+
+### Gone port detected (nc killed)
+$ ./ports --diff
+ports diff (compared to last run at 16:42:05):
+- 19876	43494	nc	*
+1 changes (0 new, 1 gone)
+Exit code: 1 ✓
+
+### No changes
+$ ./ports --diff
+No changes since last run at 16:42:08
+Exit code: 0 ✓
+
+## Implementation Summary
+- Cache stored at os.UserCacheDir()/ports/last.json
+- Identity key: (Port, PID, Process) tuple
+- Exit codes: 0=no changes/first run, 1=changes detected, 2=error
+- Port filter support via portFilter parameter
+- Sorted output for determinism

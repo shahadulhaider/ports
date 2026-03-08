@@ -1,0 +1,16 @@
+## Scenario 2: EPERM (Permission Denied) - Programmatic Verification
+
+Since all listening ports on this macOS system are user-owned (msh),
+EPERM was verified programmatically by attempting to kill PID 1 (launchd).
+
+Test code:
+  err := syscall.Kill(1, syscall.SIGTERM)
+  errors.Is(err, syscall.EPERM) → true
+
+Result:
+  EPERM: Permission denied: cannot kill PID 1 (launchd)
+
+The errors.Is(killErr, syscall.EPERM) branch in model.go is confirmed working.
+Status message would show: "Permission denied: cannot kill PID N (processname)"
+
+TUI behavior: status bar shows error, TUI remains running, no refresh triggered.

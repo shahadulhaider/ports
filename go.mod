@@ -1,4 +1,4 @@
-module ports
+module github.com/shahadulhaider/ports
 
 go 1.25
 

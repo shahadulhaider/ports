@@ -1,0 +1,11 @@
+PORT   PID      PROCESS                        PROTO    ADDRESS              TYPE
+5000   20133    ControlCenter                  TCP      *                    IPv4
+5000   20133    ControlCenter                  TCP      *                    IPv6
+6463   24426    Discord Helper (Renderer)      TCP      127.0.0.1            IPv4
+7000   20133    ControlCenter                  TCP      *                    IPv4
+7000   20133    ControlCenter                  TCP      *                    IPv6
+7265   20206    Raycast                        TCP      127.0.0.1            IPv4
+44950  20250    figma_agent                    TCP      127.0.0.1            IPv4
+44960  20250    figma_agent                    TCP      127.0.0.1            IPv4
+50413  20200    rapportd                       TCP      *                    IPv4
+50413  20200    rapportd                       TCP      *                    IPv6

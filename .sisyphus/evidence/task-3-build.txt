@@ -1,0 +1,5 @@
+=== GOOS=linux go build ===
+EXIT:0
+
+=== go vet ===
+EXIT:0

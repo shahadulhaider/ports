@@ -1,0 +1,28 @@
+Task 1: Expand PortInfo struct and add key bindings
+=====================================================
+
+CHANGES MADE:
+=============
+
+1. proc.go - Added 3 new fields to PortInfo struct:
+   - Connections int    // active TCP connection count (-1 for UDP/N/A)
+   - Service     string // human-readable service name (e.g., "http", "ssh")
+   - Status      string // "new", "gone", or "" for port change tracking
+
+2. keys.go - Added 5 new key bindings to keyMap struct and keys var:
+   - ForceKill: key.NewBinding(key.WithKeys("X"), key.WithHelp("X", "force kill (SIGKILL)"))
+   - Sort: key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "cycle sort"))
+   - Open: key.NewBinding(key.WithKeys("o"), key.WithHelp("o", "open in browser"))
+   - ToggleUDP: key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "toggle TCP/UDP"))
+   - ToggleDedup: key.NewBinding(key.WithKeys("m"), key.WithHelp("m", "toggle merge"))
+
+BUILD VERIFICATION:
+===================
+
+✓ go build -o /dev/null ./...
+✓ go vet ./...
+✓ GOOS=linux go build -o /dev/null ./...
+
+All verification commands passed successfully.
+
+Timestamp: 2026-03-08

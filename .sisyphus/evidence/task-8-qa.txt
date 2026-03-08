@@ -1,0 +1,28 @@
+## Task 8 QA Evidence — Help Overlay + Polish
+
+### Build
+BUILD OK
+VET OK
+LINUX OK
+
+### Scenario 1: Help overlay toggles
+- Initial state: table visible with 10 ports, status bar shows "? help  q quit"
+- After pressing ?: centered help overlay appears with rounded border
+  - Shows "Help — ports" title
+  - Lists all keybindings: ↑/↓ j/k, /, Esc, x, c, r, ?, q/Ctrl+C
+  - Shows "Press ? to close"
+- After pressing ? again: table visible again (PORT column header visible)
+
+### Scenario 2: Full integration test
+- nc -l 19777 started (PID 37748)
+- App shows 11 ports including 19777 (nc)
+- Filter /19777: shows 1 result (nc on 19777)
+- Esc clears filter
+- c copies: "5000\t37323\tControlCenter\t*" to clipboard
+- ? shows help overlay (centered, all keybindings)
+- ? closes help overlay
+- q quits cleanly
+
+### Scenario 3: vet + cross-compile
+VET OK
+LINUX OK

@@ -1,0 +1,50 @@
+ ⚡ ports (4 listening)
+ PORT      PID       PROCESS                    PROTO   ADDRESS               TYPE
+─────────────────────────────────────────────────────────────────────────────────────
+ 5000      20133     ControlCenter              TCP     *                     IPv4
+ 5000      20133     ControlCenter              TCP     *                     IPv6
+ 7000      20133     ControlCenter              TCP     *                     IPv4
+ 7000      20133     ControlCenter              TCP     *                     IPv6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Filter: > Control  (4 results) | Esc to cancel
+
+

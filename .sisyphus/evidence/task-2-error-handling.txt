@@ -1,0 +1,19 @@
+Error handling in GetListeningPorts():
+
+1. lsof exit code 1 with empty stdout + empty stderr:
+   -> Treated as "no listening ports" -> returns nil, nil (not an error)
+   -> This is lsof's documented behavior when no matching processes exist
+
+2. lsof exit code non-zero with stderr content:
+   -> Returns nil, error wrapping the stderr message
+   -> Indicates a real lsof failure (permissions, missing binary, etc.)
+
+3. lsof exit code non-zero but stdout has content:
+   -> Proceeds to parse the output (partial results are valid)
+   -> lsof can exit 1 even when returning some results on certain macOS versions
+
+4. parseLsofOutput filters:
+   -> portStr == "*": wildcard port (unbound socket), skipped
+   -> portStr == "":  malformed line, skipped
+   -> port == 0:      port 0 is not a real listening port, skipped
+   -> Atoi error:     non-numeric port string, skipped
