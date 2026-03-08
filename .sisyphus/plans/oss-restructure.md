@@ -141,7 +141,7 @@ No parallelization opportunity (sequential dependency chain)
 
 ## TODOs
 
-- [ ] 1. Restructure Go code into cmd/ + internal/ layout
+- [x] 1. Restructure Go code into cmd/ + internal/ layout
 
   **What to do**:
   1. Create directories: `cmd/ports/`, `internal/tui/`, `internal/scanner/`, `internal/diff/`
