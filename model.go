@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -181,6 +183,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+		if key.Matches(msg, keys.Copy) {
+			selectedRow := m.table.SelectedRow()
+			if len(selectedRow) >= 3 {
+				port := selectedRow[0]
+				pid := selectedRow[1]
+				process := selectedRow[2]
+				address := ""
+				if len(selectedRow) >= 5 {
+					address = selectedRow[4]
+				}
+				text := fmt.Sprintf("%s\t%s\t%s\t%s", port, pid, process, address)
+				if err := copyToClipboard(text); err != nil {
+					m.statusMsg = fmt.Sprintf("Clipboard not available: %v", err)
+				} else {
+					m.statusMsg = fmt.Sprintf("Copied: port %s (%s)", port, process)
+				}
+				cmds = append(cmds, clearStatusCmd())
+			}
+		}
 		// Delegate navigation to table
 		m.table, cmd = m.table.Update(msg)
 		cmds = append(cmds, cmd)
@@ -243,6 +264,20 @@ func clearStatusCmd() tea.Cmd {
 	return tea.Tick(3*time.Second, func(time.Time) tea.Msg {
 		return statusClearMsg{}
 	})
+}
+
+func copyToClipboard(text string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("pbcopy")
+	case "linux":
+		cmd = exec.Command("xclip", "-selection", "clipboard")
+	default:
+		return fmt.Errorf("clipboard not supported on %s", runtime.GOOS)
+	}
+	cmd.Stdin = strings.NewReader(text)
+	return cmd.Run()
 }
 
 func filterPorts(ports []PortInfo, query string) []PortInfo {
