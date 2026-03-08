@@ -53,6 +53,7 @@ func NewModel(initialPort int) model {
 		{Title: "ADDRESS", Width: 20},
 		{Title: "TYPE", Width: 6},
 		{Title: "SERVICE", Width: 10},
+		{Title: "CONNS", Width: 6},
 	}
 
 	t := table.New(
@@ -290,6 +291,46 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, tea.Batch(cmds...)
 		}
+		if key.Matches(msg, keys.ForceKill) {
+			selectedRow := m.table.SelectedRow()
+			if len(selectedRow) >= 3 {
+				pid, err := strconv.Atoi(selectedRow[2])
+				if err == nil && pid > 0 {
+					processName := ""
+					if len(selectedRow) >= 4 {
+						processName = selectedRow[3]
+					}
+					killErr := syscall.Kill(pid, syscall.SIGKILL)
+					m.statusCounter++
+					if killErr == nil {
+						m.statusMsg = fmt.Sprintf("Force killed PID %d (%s)", pid, processName)
+						cmds = append(cmds, fetchPortsCmd(m.protoFilter), m.clearStatusCmd())
+					} else if errors.Is(killErr, syscall.EPERM) {
+						m.statusMsg = fmt.Sprintf("Permission denied: cannot kill PID %d (%s)", pid, processName)
+						cmds = append(cmds, m.clearStatusCmd())
+					} else {
+						m.statusMsg = fmt.Sprintf("Force kill failed: %v", killErr)
+						cmds = append(cmds, m.clearStatusCmd())
+					}
+				}
+			}
+			return m, tea.Batch(cmds...)
+		}
+		if key.Matches(msg, keys.Open) {
+			selectedRow := m.table.SelectedRow()
+			if len(selectedRow) >= 2 {
+				port := selectedRow[1]
+				url := "http://localhost:" + port
+				m.statusCounter++
+				if err := openURL(url); err != nil {
+					m.statusMsg = fmt.Sprintf("Cannot open browser: %v", err)
+				} else {
+					m.statusMsg = fmt.Sprintf("Opened %s", url)
+				}
+				cmds = append(cmds, m.clearStatusCmd())
+			}
+			return m, tea.Batch(cmds...)
+		}
 		if key.Matches(msg, keys.Copy) {
 			selectedRow := m.table.SelectedRow()
 			// Column indices: [0]=STATUS [1]=PORT [2]=PID [3]=PROCESS [4]=PROTO [5]=ADDRESS
@@ -349,6 +390,8 @@ func (m model) View() string {
   /             Filter ports
   Esc           Clear filter
   x             Kill process (SIGTERM)
+  X             Force kill (SIGKILL)
+  o             Open in browser
   c             Copy to clipboard
   s             Cycle sort mode
   t             Toggle TCP/UDP/Both
@@ -418,6 +461,12 @@ func portsToRows(ports []PortInfo) []table.Row {
 		case "gone":
 			status = "○"
 		}
+		var conns string
+		if p.Connections < 0 {
+			conns = "N/A"
+		} else {
+			conns = strconv.Itoa(p.Connections)
+		}
 		rows[i] = table.Row{
 			status,
 			strconv.Itoa(p.Port),
@@ -427,6 +476,7 @@ func portsToRows(ports []PortInfo) []table.Row {
 			p.Address,
 			p.Type,
 			serviceName(p.Port),
+			conns,
 		}
 	}
 	return rows
@@ -444,6 +494,19 @@ func copyToClipboard(text string) error {
 	}
 	cmd.Stdin = strings.NewReader(text)
 	return cmd.Run()
+}
+
+func openURL(url string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", url)
+	case "linux":
+		cmd = exec.Command("xdg-open", url)
+	default:
+		return fmt.Errorf("open not supported on %s", runtime.GOOS)
+	}
+	return cmd.Start()
 }
 
 func filterPorts(ports []PortInfo, query string) []PortInfo {
