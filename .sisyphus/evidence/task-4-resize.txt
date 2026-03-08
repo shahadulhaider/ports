@@ -1,0 +1,1 @@
+RESIZE: table still visible after resize from 80x24 to 120x40, no crash
