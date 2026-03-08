@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -98,7 +99,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case portsMsg:
 		m.allPorts = []PortInfo(msg)
-		m.filteredPorts = m.allPorts
+		if m.filterText != "" {
+			m.filteredPorts = filterPorts(m.allPorts, m.filterText)
+		} else {
+			m.filteredPorts = m.allPorts
+		}
 		m.table.SetRows(portsToRows(m.filteredPorts))
 		m.lastRefresh = time.Now()
 		m.ready = true
@@ -110,8 +115,40 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.statusMsg = ""
 
 	case tea.KeyMsg:
+		// Filter mode toggle
+		if m.filtering {
+			// In filter mode: handle Esc to exit, otherwise pass to textinput
+			if key.Matches(msg, keys.ClearFilter) {
+				m.filtering = false
+				m.filterInput.Blur()
+				m.filterInput.SetValue("")
+				m.filterText = ""
+				m.filteredPorts = m.allPorts
+				m.table.SetRows(portsToRows(m.filteredPorts))
+				return m, tea.Batch(cmds...)
+			}
+			// Pass keystrokes to filter input
+			var tiCmd tea.Cmd
+			m.filterInput, tiCmd = m.filterInput.Update(msg)
+			newFilter := m.filterInput.Value()
+			if newFilter != m.filterText {
+				m.filterText = newFilter
+				m.filteredPorts = filterPorts(m.allPorts, m.filterText)
+				m.table.SetRows(portsToRows(m.filteredPorts))
+			}
+			cmds = append(cmds, tiCmd)
+			return m, tea.Batch(cmds...)
+		}
+
+		// Not in filter mode
 		if key.Matches(msg, keys.Quit) {
 			return m, tea.Quit
+		}
+		if key.Matches(msg, keys.Filter) {
+			m.filtering = true
+			m.filterInput.SetValue("")
+			m.filterInput.Focus()
+			return m, tea.Batch(cmds...)
 		}
 		if key.Matches(msg, keys.Refresh) {
 			cmds = append(cmds, fetchPortsCmd())
@@ -131,11 +168,20 @@ func (m model) View() string {
 
 	title := titleStyle.Render(fmt.Sprintf(" ⚡ ports (%d listening)", len(m.filteredPorts)))
 
-	tableView := m.table.View()
+	var tableView string
+	if len(m.filteredPorts) == 0 && m.ready {
+		tableView = helpStyle.Render("\n  No matching ports")
+	} else {
+		tableView = m.table.View()
+	}
 
 	var statusText string
 	if m.statusMsg != "" {
 		statusText = " " + m.statusMsg
+	} else if m.filtering {
+		statusText = fmt.Sprintf(" Filter: %s (%d results) | Esc to cancel", m.filterInput.View(), len(m.filteredPorts))
+	} else if m.filterText != "" {
+		statusText = fmt.Sprintf(" Filtered: %q (%d results) | Esc to clear | ? help  q quit", m.filterText, len(m.filteredPorts))
 	} else {
 		refreshTime := m.lastRefresh.Format("15:04:05")
 		statusText = fmt.Sprintf(" Last refresh: %s | %d ports | ? help  q quit", refreshTime, len(m.filteredPorts))
@@ -163,4 +209,20 @@ func portsToRows(ports []PortInfo) []table.Row {
 		}
 	}
 	return rows
+}
+
+func filterPorts(ports []PortInfo, query string) []PortInfo {
+	if query == "" {
+		return ports
+	}
+	q := strings.ToLower(query)
+	var result []PortInfo
+	for _, p := range ports {
+		if strings.Contains(strings.ToLower(strconv.Itoa(p.Port)), q) ||
+			strings.Contains(strings.ToLower(p.Process), q) ||
+			strings.Contains(strings.ToLower(p.Address), q) {
+			result = append(result, p)
+		}
+	}
+	return result
 }
