@@ -1,14 +1,15 @@
 BINARY := ports
 PKG    := ./cmd/ports
 VERSION ?= dev
+LDFLAGS := -s -w -X main.version=$(VERSION)
 
 .PHONY: build install clean vet lint cross
 
 build:
-	go build -o $(BINARY) $(PKG)
+	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(PKG)
 
 install:
-	go install $(PKG)
+	go install -ldflags "$(LDFLAGS)" $(PKG)
 
 clean:
 	rm -f $(BINARY)
@@ -23,7 +24,7 @@ lint:
 
 cross:
 	mkdir -p dist
-	GOOS=darwin  GOARCH=amd64 go build -o dist/$(BINARY)-darwin-amd64  $(PKG)
-	GOOS=darwin  GOARCH=arm64 go build -o dist/$(BINARY)-darwin-arm64  $(PKG)
-	GOOS=linux   GOARCH=amd64 go build -o dist/$(BINARY)-linux-amd64   $(PKG)
-	GOOS=linux   GOARCH=arm64 go build -o dist/$(BINARY)-linux-arm64   $(PKG)
+	GOOS=darwin  GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/$(BINARY)-darwin-amd64  $(PKG)
+	GOOS=darwin  GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/$(BINARY)-darwin-arm64  $(PKG)
+	GOOS=linux   GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/$(BINARY)-linux-amd64   $(PKG)
+	GOOS=linux   GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/$(BINARY)-linux-arm64   $(PKG)

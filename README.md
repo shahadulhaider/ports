@@ -25,11 +25,22 @@ A fast, keyboard-driven TUI for exploring listening ports on macOS and Linux.
 
 ## Installation
 
+### Homebrew (macOS)
+
+```bash
+brew tap shahadulhaider/tap
+brew install ports
+```
+
 ### go install (recommended)
 
 ```bash
 go install github.com/shahadulhaider/ports/cmd/ports@latest
 ```
+
+### Download binary
+
+Pre-built binaries for macOS and Linux are available on the [GitHub Releases](https://github.com/shahadulhaider/ports/releases) page.
 
 ### Build from source
 
@@ -45,6 +56,9 @@ make build
 ```bash
 # Launch TUI
 ports
+
+# Check version
+ports --version
 
 # Pre-filter to a specific port
 ports --port 3000
@@ -70,6 +84,14 @@ ports --diff
 | `r` | Refresh now |
 | `?` | Toggle help overlay |
 | `q` / `Ctrl+C` | Quit |
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--version` | Print version and exit |
+| `--port <N>` | Pre-filter to specific port on startup |
+| `--diff` | Show changes since last run and exit |
 
 ## License
 
