@@ -12,6 +12,11 @@ type keyMap struct {
 	Refresh     key.Binding
 	Help        key.Binding
 	Quit        key.Binding
+	ForceKill   key.Binding
+	Sort        key.Binding
+	Open        key.Binding
+	ToggleUDP   key.Binding
+	ToggleDedup key.Binding
 }
 
 var keys = keyMap{
@@ -50,5 +55,25 @@ var keys = keyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("q", "ctrl+c"),
 		key.WithHelp("q", "quit"),
+	),
+	ForceKill: key.NewBinding(
+		key.WithKeys("X"),
+		key.WithHelp("X", "force kill (SIGKILL)"),
+	),
+	Sort: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "cycle sort"),
+	),
+	Open: key.NewBinding(
+		key.WithKeys("o"),
+		key.WithHelp("o", "open in browser"),
+	),
+	ToggleUDP: key.NewBinding(
+		key.WithKeys("t"),
+		key.WithHelp("t", "toggle TCP/UDP"),
+	),
+	ToggleDedup: key.NewBinding(
+		key.WithKeys("m"),
+		key.WithHelp("m", "toggle merge"),
 	),
 }

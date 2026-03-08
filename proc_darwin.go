@@ -30,6 +30,62 @@ func GetListeningPorts() ([]PortInfo, error) {
 	return ports, nil
 }
 
+// GetUDPPorts returns all UDP bound ports on macOS using lsof.
+func GetUDPPorts() ([]PortInfo, error) {
+	cmd := exec.Command("lsof", "-iUDP", "-P", "-n", "-F", "pcfnPt")
+	out, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok && len(exitErr.Stderr) > 0 {
+			return nil, fmt.Errorf("lsof error: %s", string(exitErr.Stderr))
+		}
+		if len(out) == 0 {
+			return nil, nil
+		}
+	}
+
+	ports := parseLsofOutput(string(out))
+	sort.Slice(ports, func(i, j int) bool {
+		return ports[i].Port < ports[j].Port
+	})
+	return ports, nil
+}
+
+// GetConnectionCounts returns a map of local port -> established TCP connection count.
+func GetConnectionCounts() (map[int]int, error) {
+	cmd := exec.Command("lsof", "-iTCP", "-P", "-n", "-sTCP:ESTABLISHED", "-F", "n")
+	out, err := cmd.Output()
+	if err != nil {
+		// No established connections is not an error
+		return map[int]int{}, nil
+	}
+
+	counts := map[int]int{}
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		if len(line) == 0 || line[0] != 'n' {
+			continue
+		}
+		value := line[1:]
+		// Format: "local_ip:local_port->remote_ip:remote_port"
+		arrowIdx := strings.Index(value, "->")
+		if arrowIdx < 0 {
+			continue
+		}
+		localPart := value[:arrowIdx]
+		lastColon := strings.LastIndex(localPart, ":")
+		if lastColon < 0 {
+			continue
+		}
+		portStr := localPart[lastColon+1:]
+		port, err := strconv.Atoi(portStr)
+		if err != nil || port == 0 {
+			continue
+		}
+		counts[port]++
+	}
+	return counts, nil
+}
+
 func parseLsofOutput(output string) []PortInfo {
 	var results []PortInfo
 	lines := strings.Split(output, "\n")

@@ -29,4 +29,10 @@ var (
 			BorderForeground(lipgloss.Color("99")).
 			Padding(1, 2).
 			Foreground(lipgloss.Color("252"))
+
+	newPortMarker = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("42"))
+
+	gonePortMarker = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("196"))
 )
