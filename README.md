@@ -138,9 +138,6 @@ disappeared since. Exits `1` when there are changes, so it composes with scripts
 
 </details>
 
-The recordings above are generated from a reproducible container so they always
-show the same dev stack — see [`demo/`](demo/) to regenerate them.
-
 ## License
 
 GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.
