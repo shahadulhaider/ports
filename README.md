@@ -2,6 +2,8 @@
 
 A fast, keyboard-driven TUI for exploring listening ports on macOS and Linux.
 
+![ports in action](demo/out/demo.gif)
+
 ## Features
 
 - Live auto-refresh every 2 seconds
@@ -92,6 +94,52 @@ ports --diff
 | `--version` | Print version and exit |
 | `--port <N>` | Pre-filter to specific port on startup |
 | `--diff` | Show changes since last run and exit |
+
+## Demo
+
+<details>
+<summary><b>Filter</b> — narrow by port, process, or service</summary>
+
+Press `/` and type. Matching runs across port number, process name, address, and
+service hint, so `3000`, `redis`, and `node` all work.
+
+![filtering ports](demo/out/filter.gif)
+
+</details>
+
+<details>
+<summary><b>Sort, merge, and protocol toggle</b></summary>
+
+`s` cycles through Port ↑ / Port ↓ / PID / Process. `m` merges duplicate
+IPv4+IPv6 rows into a single entry marked `4+6`. `t` switches between TCP, UDP,
+and both.
+
+![sorting and merging](demo/out/sort.gif)
+
+</details>
+
+<details>
+<summary><b>Kill a process</b></summary>
+
+Select a row and press `x` for SIGTERM (`X` for SIGKILL). The freed port is
+marked `○` until the next refresh.
+
+![killing a process](demo/out/kill.gif)
+
+</details>
+
+<details>
+<summary><b>Diff mode</b> — non-interactive port changes</summary>
+
+`ports --diff` saves a baseline on first run, then reports what appeared and
+disappeared since. Exits `1` when there are changes, so it composes with scripts.
+
+![diff mode](demo/out/diff.gif)
+
+</details>
+
+The recordings above are generated from a reproducible container so they always
+show the same dev stack — see [`demo/`](demo/) to regenerate them.
 
 ## License
 
