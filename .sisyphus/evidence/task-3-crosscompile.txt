@@ -1,2 +1,0 @@
-LINUX BUILD OK
-Exit code: 0

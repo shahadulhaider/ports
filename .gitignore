@@ -1,5 +1,5 @@
-# Binary
-ports
+# Binary (anchored: an unanchored "ports" would also ignore cmd/ports/)
+/ports
 /cmd/ports/ports
 
 # Build output
