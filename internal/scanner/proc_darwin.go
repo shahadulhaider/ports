@@ -24,6 +24,7 @@ func GetListeningPorts() ([]PortInfo, error) {
 	}
 
 	ports := parseLsofOutput(string(out))
+	applyConnectionCounts(ports)
 	sort.Slice(ports, func(i, j int) bool {
 		return ports[i].Port < ports[j].Port
 	})
@@ -44,6 +45,7 @@ func GetUDPPorts() ([]PortInfo, error) {
 	}
 
 	ports := parseLsofOutput(string(out))
+	markConnectionsNotApplicable(ports)
 	sort.Slice(ports, func(i, j int) bool {
 		return ports[i].Port < ports[j].Port
 	})
